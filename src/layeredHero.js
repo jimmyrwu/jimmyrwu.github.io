@@ -3,7 +3,7 @@
 // The video file is two frames stacked vertically:
 //   top half    = the colour footage
 //   bottom half = a black/white matte (white = cows + hill, i.e. the foreground)
-// A WebGL shader composites: background -> name -> foreground, using the matte.
+// A WebGL shader composites: background -> name -> foreground (cows + hill) -> tagline.
 
 const VERT = `
 attribute vec2 aPos;
@@ -17,6 +17,7 @@ const FRAG = `
 precision mediump float;
 uniform sampler2D uVideo;
 uniform sampler2D uText;
+uniform sampler2D uOverlay;
 uniform vec2 uScale;
 uniform vec2 uOffset;
 varying vec2 vUv;
@@ -26,7 +27,9 @@ void main() {
   float fg = smoothstep(0.15, 0.85, texture2D(uVideo, vec2(v.x, 0.5 + v.y * 0.5)).r);
   vec4 text = texture2D(uText, vUv);               // premultiplied alpha
   float show = text.a * (1.0 - fg);                // the name is hidden wherever the foreground is
-  gl_FragColor = vec4(colour * (1.0 - show) + text.rgb * (1.0 - fg), 1.0);
+  vec3 behind = colour * (1.0 - show) + text.rgb * (1.0 - fg);
+  vec4 overlay = texture2D(uOverlay, vUv);         // tagline, always on top
+  gl_FragColor = vec4(behind * (1.0 - overlay.a) + overlay.rgb, 1.0);
 }`
 
 const VIDEO_ASPECT = 16 / 9
@@ -36,7 +39,10 @@ const VIDEO_ASPECT = 16 / 9
 //   --name-width   how wide the name is, as a fraction of the screen
 //   --name-shadow  soft shadow strength, 0 = none
 //   font-weight, color, font-family
-export function initLayeredHero(section, video, title) {
+// The tagline (see .tagline) is drawn in front of everything, on the grass:
+//   --tagline-size    font size as a fraction of the name's
+//   --tagline-height  where its baseline sits in the video, 0 = top, 1 = bottom
+export function initLayeredHero(section, video, title, tagline) {
   const canvas = document.createElement('canvas')
   canvas.className = 'hero-canvas'
   canvas.setAttribute('aria-hidden', 'true')
@@ -78,21 +84,27 @@ export function initLayeredHero(section, video, title) {
   }
   const videoTex = makeTexture(0)
   const textTex = makeTexture(1)
+  const overlayTex = makeTexture(2)
   gl.uniform1i(gl.getUniformLocation(program, 'uVideo'), 0)
   gl.uniform1i(gl.getUniformLocation(program, 'uText'), 1)
+  gl.uniform1i(gl.getUniformLocation(program, 'uOverlay'), 2)
   const uScale = gl.getUniformLocation(program, 'uScale')
   const uOffset = gl.getUniformLocation(program, 'uOffset')
   gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true)
 
   const textCanvas = document.createElement('canvas')
   const tctx = textCanvas.getContext('2d')
-  function readStyle() {
-    const css = getComputedStyle(title)
+  const overlayCanvas = document.createElement('canvas')
+  const octx = overlayCanvas.getContext('2d')
+  function readStyle(el = title) {
+    const css = getComputedStyle(el)
     const num = (name, fallback) => parseFloat(css.getPropertyValue(name)) || fallback
     return {
       height: num('--name-height', 0.55),
       width: num('--name-width', 0.8),
       shadow: num('--name-shadow', 0.25),
+      taglineSize: num('--tagline-size', 0.16),
+      taglineHeight: num('--tagline-height', 0.82),
       weight: css.fontWeight,
       color: css.color,
       fontFamily: css.fontFamily,
@@ -104,8 +116,8 @@ export function initLayeredHero(section, video, title) {
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
     const w = Math.round(section.clientWidth * dpr)
     const h = Math.round(section.clientHeight * dpr)
-    canvas.width = textCanvas.width = w
-    canvas.height = textCanvas.height = h
+    canvas.width = textCanvas.width = overlayCanvas.width = w
+    canvas.height = textCanvas.height = overlayCanvas.height = h
     gl.viewport(0, 0, w, h)
 
     // Same maths as object-fit: cover: which part of the video frame is on screen
@@ -125,12 +137,27 @@ export function initLayeredHero(section, video, title) {
     tctx.fillStyle = color
     tctx.shadowColor = `rgba(0, 0, 0, ${shadow})`
     tctx.shadowBlur = size * 0.08
-    const baseline = (height - (1 - scale[1]) / 2) / scale[1] * h
-    tctx.fillText(title.textContent, w / 2, baseline)
+    const toScreenY = (videoY) => (videoY - (1 - scale[1]) / 2) / scale[1] * h
+    tctx.fillText(title.textContent, w / 2, toScreenY(height))
 
-    gl.activeTexture(gl.TEXTURE1)
-    gl.bindTexture(gl.TEXTURE_2D, textTex)
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, textCanvas)
+    // Tagline: centred, in front of the cows and hill
+    octx.clearRect(0, 0, w, h)
+    if (tagline) {
+      const t = readStyle(tagline)
+      const tSize = Math.max(size * t.taglineSize, 14 * dpr) // never smaller than 14px, for phones
+      octx.font = `${t.weight} ${tSize}px ${t.fontFamily}`
+      octx.textAlign = 'center'
+      octx.fillStyle = t.color
+      octx.shadowColor = `rgba(0, 0, 0, ${t.shadow})`
+      octx.shadowBlur = tSize * 0.3
+      octx.fillText(tagline.textContent, w / 2, toScreenY(t.taglineHeight))
+    }
+
+    for (const [unit, tex, src] of [[1, textTex, textCanvas], [2, overlayTex, overlayCanvas]]) {
+      gl.activeTexture(gl.TEXTURE0 + unit)
+      gl.bindTexture(gl.TEXTURE_2D, tex)
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src)
+    }
   }
 
   function draw() {

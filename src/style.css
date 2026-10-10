@@ -18,19 +18,11 @@
   --text-h: #08060d;
   --bg: #fff;
   --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
   --social-bg: rgba(244, 243, 236, 0.5);
   --shadow:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 
-  --sans: 'PP Mori', system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: 'PP Mori', system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: 'PP Mori', ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--sans);
+  font: 18px/145% 'PP Mori', system-ui, 'Segoe UI', Roboto, sans-serif;
   letter-spacing: 0.18px;
   color-scheme: light dark;
   color: var(--text);
@@ -51,10 +43,6 @@
     --text-h: #f3f4f6;
     --bg: #16171d;
     --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
     --social-bg: rgba(47, 48, 58, 0.5);
     --shadow:
       rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
@@ -81,20 +69,10 @@ select {
 
 h1,
 h2 {
-  font-family: var(--heading);
   font-weight: 500;
   color: var(--text-h);
 }
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
 h2 {
   font-size: 24px;
   line-height: 118%;
@@ -104,81 +82,9 @@ h2 {
     font-size: 20px;
   }
 }
+
 p {
   margin: 0;
-}
-
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
-}
-
-.counter {
-  font-size: 16px;
-  padding: 5px 10px;
-  border-radius: 5px;
-  color: var(--accent);
-  background: var(--accent-bg);
-  border: 2px solid transparent;
-  transition: border-color 0.3s;
-  margin-bottom: 24px;
-
-  &:hover {
-    border-color: var(--accent-border);
-  }
-  &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
-}
-
-.hero {
-  position: relative;
-
-  .base,
-  .framework,
-  .vite {
-    inset-inline: 0;
-    margin: 0 auto;
-  }
-
-  .base {
-    width: 170px;
-    position: relative;
-    z-index: 0;
-  }
-
-  .framework,
-  .vite {
-    position: absolute;
-  }
-
-  .framework {
-    z-index: 1;
-    top: 34px;
-    height: 28px;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg)
-      scale(1.4);
-  }
-
-  .vite {
-    z-index: 0;
-    top: 107px;
-    height: 26px;
-    width: auto;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg)
-      scale(0.8);
-  }
 }
 
 #app {
@@ -193,25 +99,25 @@ code {
   box-sizing: border-box;
 }
 
+/* Full-screen, edge-to-edge first page with the cow video behind it */
 #center {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-  place-content: center;
-  place-items: center;
-  flex-grow: 1;
-
-  /* Full-screen, edge-to-edge first page with the cow video behind it */
   position: relative;
   isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  place-content: center;
+  place-items: center;
+  gap: 25px;
   min-height: 100svh;
   width: 100vw;
   margin-inline: calc(50% - 50vw);
   box-sizing: border-box;
   overflow: hidden;
-  --text: rgba(255, 255, 255, 0.85);
-  --text-h: #fff;
-  --code-bg: rgba(0, 0, 0, 0.35);
+
+  @media (max-width: 1024px) {
+    padding: 32px 20px 24px;
+    gap: 18px;
+  }
 
   /* The video holds the footage (top half) stacked on its cow/hill matte (bottom half).
      At 200% height with object-fit: cover, only the footage half is in view. */
@@ -225,7 +131,7 @@ code {
     object-fit: cover;
   }
 
-  /* WebGL composite from layeredHero.js: background, then the name, then the cows */
+  /* WebGL composite from layeredHero.js: background, name, cows, then the tagline on top */
   .hero-canvas {
     position: absolute;
     inset: 0;
@@ -234,23 +140,34 @@ code {
     height: 100%;
   }
 
-  /* Your name over the video. The canvas in layeredHero.js reads these values,
+  /* Your name and the line below it. The canvas in layeredHero.js reads these values,
      so edit them here; the page redraws when you save. */
-  .name {
-    --name-height: 0.54;  /* baseline position in the video: 0 = top, 1 = bottom (hill ridge is ~0.7) */
-    --name-width: 0.8;    /* name width as a fraction of the screen */
+  .name,
+  .tagline {
     --name-shadow: 0.25;  /* shadow strength, 0 = none */
-    font-weight: 600;     /* 400 = regular, 600 = semibold */
-    color: #fff;
-
+    color: #fff;          /* set color in .name or .tagline to colour them separately */
     margin: 0;
-    font-size: clamp(56px, 16vw, 240px);
-    letter-spacing: -0.02em;
     text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
   }
 
-  /* With the canvas drawing the name, keep the heading for screen readers and search only */
-  &.layered .name {
+  .name {
+    --name-height: 0.54;  /* baseline position in the video: 0 = top, 1 = bottom (hill ridge is ~0.7) */
+    --name-width: 0.8;    /* name width as a fraction of the screen */
+    font-weight: 600;     /* 400 = regular, 600 = semibold */
+    font-size: clamp(56px, 16vw, 240px);
+    letter-spacing: -0.02em;
+  }
+
+  .tagline {
+    --tagline-size: 0.16; /* font size as a fraction of the name's */
+    --tagline-height: 0.82; /* baseline position in the video, on the grass below the cows */
+    font-weight: 400;
+    font-size: clamp(16px, 2.5vw, 32px);
+  }
+
+  /* With the canvas drawing the text, keep it in the page for screen readers and search only */
+  &.layered .name,
+  &.layered .tagline {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -262,11 +179,6 @@ code {
   /* Keep the video decoding for the canvas, but don't show it */
   &.layered .bg-video {
     opacity: 0;
-  }
-
-  @media (max-width: 1024px) {
-    padding: 32px 20px 24px;
-    gap: 18px;
   }
 }
 
@@ -313,27 +225,13 @@ code {
     height: 22px;
   }
 
-  @media (max-width: 1024px) {
-    flex-direction: column;
-    text-align: center;
+  ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    gap: 8px;
+    margin: 32px 0 0;
   }
-}
-
-#docs {
-  border-right: 1px solid var(--border);
-
-  @media (max-width: 1024px) {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
-}
-
-#next-steps ul {
-  list-style: none;
-  padding: 0;
-  display: flex;
-  gap: 8px;
-  margin: 32px 0 0;
 
   .logo {
     height: 18px;
@@ -354,16 +252,22 @@ code {
     &:hover {
       box-shadow: var(--shadow);
     }
-    .button-icon {
-      height: 18px;
-      width: 18px;
-    }
+  }
+
+  .button-icon {
+    height: 18px;
+    width: 18px;
   }
 
   @media (max-width: 1024px) {
-    margin-top: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+
+    ul {
+      margin-top: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
 
     li {
       flex: 1 1 calc(50% - 8px);
@@ -374,6 +278,15 @@ code {
       justify-content: center;
       box-sizing: border-box;
     }
+  }
+}
+
+#docs {
+  border-right: 1px solid var(--border);
+
+  @media (max-width: 1024px) {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
   }
 }
 
