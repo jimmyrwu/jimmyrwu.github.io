@@ -1,8 +1,93 @@
-/* PP Mori (Pangram Pangram). Files live in public/fonts/. */
+/* =====================================================================================
+   style.css: how the site looks
+   =====================================================================================
+   1. SETTINGS     the numbers you're most likely to change (sizes, spacing, animation)
+   2. FONTS        PP Mori, all weights and italics
+   3. BASE         page-wide defaults
+   4. MENU         the links at the top of the screen
+   5. HERO         the cow video and your name
+   6. PAGES        about me, writing, media (scrolling over the video)
+   7. TEXT HELPERS classes you can put on individual words
+   ===================================================================================== */
+
+
+/* =====================================================================================
+   1. SETTINGS
+   Change a number and save: the page updates straight away while `npm run dev` runs.
+   ===================================================================================== */
+:root {
+  /* ---- Text ---- */
+  --text-size: 18px;            /* normal text (pages, menu) */
+  --text-size-small: 20px;      /* normal text on screens narrower than 1024px */
+  --heading-size: 32px;         /* page headings ("writing", "media") */
+  --text-color: #fff;           /* all text, light and dark mode */
+  --page-weight: 600;           /* text on the pages: 200 thin, 400 regular, 600 semibold */
+  --page-text-color: #fff;      /* text on the pages (about, writing, media) */
+
+  /* ---- Pages ---- */
+  --page-top: max(20svh, 96px);       /* how far down each page's content starts (cows start ~55%) */
+  --page-top-small: max(16svh, 80px); /* same, on screens narrower than 1024px */
+  --page-text-width: 680px;           /* longest line length, for comfortable reading */
+
+  /* ---- Your name on the video (read by layeredHero.js) ---- */
+  --rise-distance: 240svh;      /* scroll length of the name's rise + pause: more = slower */
+  --name-rise-portion: 0.6;     /* share of that spent rising; the rest is the pause */
+  --name-start-height: 1.15;    /* where it starts, hidden behind the hill */
+  --name-height: 0.46;          /* where it settles: 0 = top of the video, 1 = bottom (hill ridge ~0.7) */
+  --name-width: 0.8;            /* width as a fraction of the screen (this sets its size) */
+  --name-shadow: 0.25;          /* shadow strength, 0 = none */
+  --zh-size: 0.3;               /* Chinese name size, as a fraction of the name's size */
+  --zh-gap: 0.3;                /* space between the name and the Chinese name: bigger = lower */
+
+  /* ---- Background (only seen for a moment before the video loads) ---- */
+  --bg: #fff;
+  --shadow: rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+
+  @media (prefers-color-scheme: dark) {
+    --bg: #16171d;
+    --shadow: rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+  }
+
+  /* Visitors who asked their system for reduced motion: no rise, the name is simply in place */
+  @media (prefers-reduced-motion: reduce) {
+    --rise-distance: 0px;
+  }
+}
+
+
+/* =====================================================================================
+   2. FONTS
+   PP Mori (Pangram Pangram), files in public/fonts/.
+   font-weight: 200 = ExtraLight, 400 = Regular, 600 = SemiBold (the heaviest you have);
+   font-style: italic for the italic versions.
+   ===================================================================================== */
+@font-face {
+  font-family: 'PP Mori';
+  src: url('/fonts/ppmori-extralight.otf') format('opentype');
+  font-weight: 100 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'PP Mori';
+  src: url('/fonts/ppmori-extralightitalic.otf') format('opentype');
+  font-weight: 100 300;
+  font-style: italic;
+  font-display: swap;
+}
+
 @font-face {
   font-family: 'PP Mori';
   src: url('/fonts/ppmori-regular.otf') format('opentype');
   font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'PP Mori';
+  src: url('/fonts/ppmori-regularitalic.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
   font-display: swap;
 }
 
@@ -13,36 +98,41 @@
   font-display: swap;
 }
 
-:root {
-  /* Default text colour: white, to read over the cow video (light and dark mode) */
-  --text: #fff;
-  --text-h: #fff;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+@font-face {
+  font-family: 'PP Mori';
+  src: url('/fonts/ppmori-semibolditalic.otf') format('opentype');
+  font-weight: 500 600;
+  font-style: italic;
+  font-display: swap;
+}
 
-  font: 18px/145% 'PP Mori', system-ui, 'Segoe UI', Roboto, sans-serif;
+
+/* =====================================================================================
+   3. BASE
+   ===================================================================================== */
+:root {
+  font: var(--text-size)/145% 'PP Mori', system-ui, 'Segoe UI', Roboto, sans-serif;
   letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
+  color: var(--text-color);
   background: var(--bg);
+  color-scheme: light dark;
+
+  /* Don't let browsers fake bold or italic: they only look smudgy */
   font-synthesis: none;
+
+  /* PP Mori's alternate letter shapes ("stylistic sets") for all HTML text:
+     ss01 display punctuation, ss03 g, ss04 r, ss05 y, ss06 ©, ss07 ®.
+     ss02 (the alternate a) is left off on purpose, to keep the regular a.
+     Delete a set from the list to go back to the normal shape for it.
+     (Your name on the video is drawn on a canvas, which doesn't use these.) */
+  font-feature-settings: "ss01", "ss03", "ss04", "ss05", "ss06", "ss07";
+
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
   @media (max-width: 1024px) {
-    font-size: 16px;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #16171d;
-    --border: #2e303a;
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+    font-size: var(--text-size-small);
   }
 }
 
@@ -52,143 +142,20 @@ body {
   overflow-x: clip;
 }
 
+/* The column everything sits in */
 #app {
   width: 1126px;
   max-width: 100%;
   margin: 0 auto;
   text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
 }
 
-/* Holds the video (pinned) plus everything that scrolls over it. The video stays frozen
-   until the end of this block, then scrolls away with it. */
-#hero-track {
-  --rise-distance: 240svh;  /* scroll length of the name's rise + pause: more = slower */
 
-  .rise-space {
-    height: var(--rise-distance);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    --rise-distance: 0px;   /* no animation: the name is simply in place */
-  }
-
-  /* Front layer from layeredHero.js: just the cows + hill, drawn over the page
-     content so it scrolls up from behind them. Clicks pass straight through to the content. */
-  .hero-foreground {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 2;
-    width: 100vw;
-    height: 100svh;
-    pointer-events: none;
-  }
-
-  /* Pages after the animation: each a full screen, transparent so the cows stay visible */
-  & > section:not(#center) {
-    position: relative;
-    min-height: 100svh;
-    box-sizing: border-box;
-
-    /* Readable white text over the sky: the same soft shadow as your name, and the
-       semibold weight of PP Mori (thicker letters stand out more against clouds) */
-    font-weight: 600;
-    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
-  }
-
-}
-
-/* Full-screen, edge-to-edge first page with the cow video behind it; pinned while #hero-track scrolls */
-#center {
-  position: sticky;
-  top: 0;
-  isolation: isolate;
-  display: flex;
-  flex-direction: column;
-  place-content: center;
-  place-items: center;
-  gap: 25px;
-  height: 100svh;
-  width: 100vw;
-  margin-inline: calc(50% - 50vw);
-  box-sizing: border-box;
-  overflow: hidden;
-
-  @media (max-width: 1024px) {
-    padding: 32px 20px 24px;
-    gap: 18px;
-  }
-
-  /* The video holds the footage (top half) stacked on its cow/hill matte (bottom half).
-     At 200% height with object-fit: cover, only the footage half is in view. */
-  .bg-video {
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: -2;
-    width: 100%;
-    height: 200%;
-    object-fit: cover;
-  }
-
-  /* Back layer from layeredHero.js: the video and your name */
-  .hero-canvas {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    width: 100%;
-    height: 100%;
-  }
-
-  /* Your name over the video. The canvas in layeredHero.js reads these values,
-     so edit them here; the page redraws when you save. */
-  .name {
-    --name-start-height: 1.15; /* where it starts, hidden behind the hill, before rising on scroll */
-    --name-rise-portion: 0.6;  /* share of --rise-distance spent rising; the rest is the pause */
-    --name-height: 0.46;  /* where it settles: 0 = top of the video, 1 = bottom (hill ridge is ~0.7) */
-    --name-width: 0.8;    /* name width as a fraction of the screen */
-    --name-shadow: 0.25;  /* shadow strength, 0 = none */
-    font-weight: 600;     /* 400 = regular, 600 = semibold */
-    color: #fff;
-    margin: 0;
-    font-size: clamp(56px, 16vw, 240px);
-    letter-spacing: -0.02em;
-    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
-  }
-
-  /* Your Chinese name, drawn under "wu" and lined up with its right edge */
-  .name-zh {
-    --zh-size: 0.3;   /* size as a fraction of the name's size */
-    --zh-gap: 0.3;    /* extra space between the name and this line: bigger = lower */
-    font-weight: 400; /* 400 = regular, 600 = bold */
-    display: block;   /* its own line in the plain-HTML fallback */
-    font-size: 0.3em;
-    text-align: right;
-  }
-
-  /* With the canvas drawing the name, keep it in the page for screen readers and search only */
-  &.layered .name {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-
-  /* Keep the video decoding for the canvas, but don't show it */
-  &.layered .bg-video {
-    opacity: 0;
-  }
-}
-
-/* Menu at the top of the screen. Fixed, so it stays visible while you scroll;
-   above the cow layer (z-index 2) so the cows never cover it. */
+/* =====================================================================================
+   4. MENU
+   Fixed at the top of the screen, so it stays visible while you scroll; above the cow
+   layer (z-index 2), so the cows never cover it.
+   ===================================================================================== */
 .top-nav {
   position: fixed;
   top: 24px;
@@ -198,7 +165,7 @@ body {
   gap: 28px;
 
   a {
-    color: #fff;
+    color: var(--text-color);
     font-weight: 600;
     text-decoration: none;
     text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
@@ -221,25 +188,134 @@ body {
   }
 }
 
-/* Pages over the cow video (about me, writing, media): content stacked, starting in the sky */
+
+/* =====================================================================================
+   5. HERO: the cow video and your name
+   How it works is explained at the top of layeredHero.js. In short, three layers:
+     back   .hero-canvas      the video + your name (inside #center)
+     middle the pages         your content, scrolling up
+     front  .hero-foreground  just the cows + hill, on top, so content passes behind them
+   ===================================================================================== */
+
+/* Holds the pinned video plus everything that scrolls over it */
+#hero-track {
+  /* The scroll space where the name rises and pauses (length: --rise-distance) */
+  .rise-space {
+    height: var(--rise-distance);
+  }
+
+  /* Front layer. Clicks pass straight through to the content underneath. */
+  .hero-foreground {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    width: 100vw;
+    height: 100svh;
+    pointer-events: none;
+  }
+}
+
+/* The first screen: full width and height, pinned in place for the whole page */
+#center {
+  position: sticky;
+  top: 0;
+  isolation: isolate;
+  display: flex;
+  place-content: center;
+  place-items: center;
+  height: 100svh;
+  width: 100vw;
+  margin-inline: calc(50% - 50vw); /* break out of the #app column to the screen edges */
+  overflow: hidden;
+
+  /* The video file: footage (top half) stacked on its cow/hill matte (bottom half).
+     It's hidden once the canvases take over; without them, 200% height shows the footage half. */
+  .bg-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -2;
+    width: 100%;
+    height: 200%;
+    object-fit: cover;
+  }
+
+  /* Back layer */
+  .hero-canvas {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Your name. The canvas draws it using the --name-… settings in section 1, plus the
+     font-weight and color here. font-size only applies if the canvas can't run. */
+  .name {
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+    font-size: clamp(56px, 16vw, 240px);
+    letter-spacing: -0.02em;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Your Chinese name, under "wu" and lined up with its right edge (--zh-… settings in section 1) */
+  .name-zh {
+    font-weight: 400;
+    display: block;
+    font-size: 0.3em;
+    text-align: right;
+  }
+
+  /* Once the canvas is drawing: keep the name for screen readers and search engines only,
+     and keep the video playing (the canvases copy from it) but out of sight */
+  &.layered .name {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  &.layered .bg-video {
+    opacity: 0;
+  }
+}
+
+
+/* =====================================================================================
+   6. PAGES: about me, writing, media
+   Each .page is one full screen, transparent so the cows stay visible behind it.
+   ===================================================================================== */
 .page {
+  position: relative;
+  min-height: 100svh;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;      /* stack the contents top to bottom */
-  justify-content: flex-start; /* start at the top of the page, not the middle */
+  justify-content: flex-start; /* start near the top of the page (see --page-top) */
   align-items: center;
   gap: 12px;
   padding: 48px 32px;
-  padding-top: max(20svh, 96px); /* distance from the top: smaller = higher (cows start ~55%); at least 96px to clear the menu */
+  padding-top: var(--page-top);
+
+  /* White text over the sky: semibold, with the same soft shadow as your name */
+  font-weight: var(--page-weight);
+  color: var(--page-text-color);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
 
   h2 {
     margin: 0 0 8px;
-    font-size: 32px;
+    font-size: var(--heading-size);
     font-weight: 600;
   }
 
   p {
     margin: 0;
-    max-width: 680px;          /* keep lines a comfortable reading length */
+    max-width: var(--page-text-width);
   }
 
   img {
@@ -252,11 +328,29 @@ body {
 
   @media (max-width: 1024px) {
     padding: 32px 20px;
-    padding-top: max(16svh, 80px); /* never closer than 80px, to leave room below the menu */
+    padding-top: var(--page-top-small);
 
     img {
       width: 180px;
       height: 180px;
     }
   }
+}
+
+
+/* =====================================================================================
+   7. TEXT HELPERS
+   Put these on words in main.js, e.g. <span class="thin">…</span>. Combine them:
+   <span class="thin italic">…</span>
+   ===================================================================================== */
+.thin      { font-weight: 200; }   /* PP Mori ExtraLight */
+.regular   { font-weight: 400; }   /* PP Mori Regular */
+.semibold  { font-weight: 600; }   /* PP Mori SemiBold */
+.italic    { font-style: italic; }
+
+/* Heavier than SemiBold. PP Mori has no heavier file, so this thickens SemiBold with an
+   outline in the text's own colour. Raise 0.6px for thicker (looks best on larger text). */
+.extraBold {
+  font-weight: 600;
+  -webkit-text-stroke: 0.6px currentColor;
 }
