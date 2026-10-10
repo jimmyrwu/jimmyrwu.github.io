@@ -121,7 +121,9 @@
    3. BASE
    ===================================================================================== */
 :root {
-  font: var(--text-size)/145% 'PP Mori', system-ui, 'Segoe UI', Roboto, sans-serif;
+  /* PP Mori has no Chinese characters, so Chinese text uses the next font that does:
+     PingFang (Apple), Noto Sans TC (Android/Linux), Microsoft JhengHei (Windows) */
+  font: var(--text-size)/145% 'PP Mori', 'PingFang TC', 'Noto Sans TC', 'Microsoft JhengHei', system-ui, 'Segoe UI', Roboto, sans-serif;
   letter-spacing: 0.18px;
   color: var(--text-color);
   background: var(--bg);
@@ -180,7 +182,8 @@ body {
   display: flex;
   gap: 28px;
 
-  a {
+  a,
+  .lang-toggle {
     color: var(--text-color);
     font-weight: 600;
     text-decoration: none;
@@ -196,11 +199,26 @@ body {
     }
   }
 
+  /* The language switch looks like the other menu links, with a thin line to set it apart */
+  .lang-toggle {
+    font: inherit;
+    font-weight: 600;
+    background: none;
+    border: 0;
+    border-left: 1px solid rgba(255, 255, 255, 0.5);
+    padding: 0 0 0 20px;
+    cursor: pointer;
+  }
+
   @media (max-width: 600px) {
     top: 16px;
     right: 20px;
     gap: 18px;
     font-size: 15px;
+
+    .lang-toggle {
+      padding-left: 14px;
+    }
   }
 }
 

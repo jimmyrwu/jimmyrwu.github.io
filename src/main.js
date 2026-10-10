@@ -31,11 +31,13 @@ const fileIcon = `<svg class="icon" viewBox="0 0 16 16" fill="currentColor" aria
 document.querySelector('#app').innerHTML = `
 <!-- Menu at the top of the screen; each link glides to the section with that id -->
 <nav class="top-nav" aria-label="Main">
-  <a href="#about">about me</a>
-  <a href="#writing">writing</a>
-  <a href="#media">media</a>
-  <a href="#cv">cv</a>
-  <a href="#contact">contact</a>
+  <a href="#about" data-t="nav-about">about me</a>
+  <a href="#writing" data-t="nav-writing">writing</a>
+  <a href="#media" data-t="nav-media">media</a>
+  <a href="#cv" data-t="nav-cv">cv</a>
+  <a href="#contact" data-t="nav-contact">contact</a>
+  <!-- Language switch: shows the language you can switch TO -->
+  <button class="lang-toggle" type="button">中文</button>
 </nav>
 
 <div id="hero-track">
@@ -55,44 +57,70 @@ document.querySelector('#app').innerHTML = `
        pauses, and scrolls away before the next. The menu's "about me" goes to the first. -->
   <section id="about" class="page">
     <!-- <img src="${headshotImg}" alt="Headshot of Jimmy Wu" width="240" height="500"> -->
-    <p>A physicist by training, I'm currently studying Policy and Computer Science at ETH Zürich, with a focus on comparative AI governance.</p>
+    <p data-t="about1">A physicist by training, I'm currently studying Policy and Computer Science at ETH Zürich, with a focus on comparative AI governance.</p>
   </section>
 
   <section class="page">
-    <p>Prior, I held roles in teaching, technology policy, and management consulting.</p>
+    <p data-t="about2">Prior, I held roles in teaching, technology policy, and management consulting.</p>
   </section>
 
   <section class="page">
-    <p>My goal remains unchanged: <span class="extraBold">connecting people with each other, and with nature, through science.</span></p>
+    <p data-t="about3">My goal remains unchanged: <span class="extraBold">connecting people with each other, and with nature, through science.</span></p>
   </section>
 
   <section id="writing" class="page">
-    <h2>writing</h2>
-    <p>Articles, essays and research will go here.</p>
+    <h2 data-t="writing-title">writing</h2>
+    <p data-t="writing-text">Articles, essays and research will go here.</p>
   </section>
 
   <section id="media" class="page">
-    <h2>media</h2>
-    <p>Talks, interviews and press will go here.</p>
+    <h2 data-t="media-title">media</h2>
+    <p data-t="media-text">Talks, interviews and press will go here.</p>
   </section>
 
   <!-- CV highlights, newest first. Each line: <span class="when">years</span> <span class="what">…</span> -->
   <section id="cv" class="page">
-    <h2>cv</h2>
+    <h2 data-t="cv-title">cv</h2>
     
-    <p><a class="icon-link" href="/jimmy-wu-cv.pdf" target="_blank" rel="noopener">${fileIcon}<span>full CV (PDF)</span></a></p>
+    <p><a class="icon-link" href="/jimmy-wu-cv.pdf" target="_blank" rel="noopener">${fileIcon}<span data-t="cv-pdf">full CV (PDF)</span></a></p>
   </section>
 
-  <!-- Replace the placeholders: your email (in both places on the first line) and your LinkedIn URL -->
+  <!-- Replace the email placeholder (in both places on its line) -->
   <section id="contact" class="page">
-    <h2>contact</h2>
-    <p>I'm always happy to talk about AI governance, teaching, or cows.</p>
+    <h2 data-t="contact-title">contact</h2>
+    <p data-t="contact-text">I'm always happy to talk about AI governance, teaching, or cows.</p>
     <p><a href="mailto:your.email@example.com">your.email@example.com</a></p>
-    <p><a class="icon-link" href="https://www.linkedin.com/in/your-profile" target="_blank" rel="noopener" aria-label="LinkedIn">${linkedinIcon}</a></p>
+    <p><a class="icon-link" href="https://www.linkedin.com/in/jimmy-wu-41965812a/" target="_blank" rel="noopener" aria-label="LinkedIn">${linkedinIcon}</a></p>
   </section>
 
 </div>
 `
+
+
+// ---- 2b. CHINESE VERSION (Traditional) ----
+// The English is the HTML above. Each piece of text marked data-t="…" there has its Chinese
+// here, under the same label. To translate something new: add data-t="new-label" to it above,
+// and a 'new-label': '…' line here. Pieces without a Chinese line simply stay in English.
+// Placeholder until the full Chinese text is written: every page shows the same note.
+const comingSoon = '中文版即將推出'
+const zh = {
+  'nav-about': '關於我',
+  'nav-writing': '寫作',
+  'nav-media': '媒體',
+  'nav-cv': '履歷',
+  'nav-contact': '聯絡',
+  'about1': comingSoon,
+  'about2': comingSoon,
+  'about3': comingSoon,
+  'writing-title': comingSoon,
+  'writing-text': '',
+  'media-title': comingSoon,
+  'media-text': '',
+  'cv-title': comingSoon,
+  'cv-pdf': '完整履歷（PDF，英文）',
+  'contact-title': comingSoon,
+  'contact-text': '',
+}
 
 
 // ---- 3. START-UP ----
@@ -117,7 +145,11 @@ const hero = initLayeredHero(
 // Smooth scrolling; anchors: true also glides to menu links like href="#about".
 // GSAP's clock drives Lenis, so smooth scrolling and the GSAP animations below stay in step.
 gsap.registerPlugin(ScrollTrigger)
-const lenis = new Lenis({ anchors: true })
+const lenis = new Lenis({
+  anchors: true,
+  wheelMultiplier: 0.5, // scroll speed for mouse wheel / trackpad: 1 = normal, 0.5 = half speed
+  touchMultiplier: 0.5, // same for touch screens (applies where Lenis handles touch)
+})
 lenis.on('scroll', ScrollTrigger.update)
 gsap.ticker.add((time) => lenis.raf(time * 1000))
 gsap.ticker.lagSmoothing(0)
@@ -160,3 +192,27 @@ function updateRise() {
 window.addEventListener('scroll', updateRise, { passive: true })
 window.addEventListener('resize', updateRise)
 updateRise()
+
+// Language toggle (EN / 中文). The choice is remembered, and ?lang=zh in the address opens the
+// Chinese version directly, so you can send people a link to it.
+const langButton = document.querySelector('.lang-toggle')
+function setLanguage(lang) {
+  for (const el of document.querySelectorAll('[data-t]')) {
+    if (el.dataset.en === undefined) el.dataset.en = el.innerHTML // keep the English to switch back to
+    el.innerHTML = lang === 'zh' ? (zh[el.dataset.t] ?? el.dataset.en) : el.dataset.en
+  }
+  document.documentElement.lang = lang === 'zh' ? 'zh-Hant' : 'en'
+  langButton.textContent = lang === 'zh' ? 'EN' : '中文'
+  langButton.lang = lang === 'zh' ? 'en' : 'zh-Hant'
+  langButton.setAttribute('aria-label', lang === 'zh' ? 'Switch to English' : '切換至中文')
+  const url = new URL(location.href)
+  if (lang === 'zh') url.searchParams.set('lang', 'zh')
+  else url.searchParams.delete('lang')
+  history.replaceState(null, '', url)
+  try { localStorage.setItem('lang', lang) } catch {}
+  ScrollTrigger.refresh() // text lengths changed, so re-measure the scroll animations
+}
+langButton.addEventListener('click', () => setLanguage(document.documentElement.lang === 'en' ? 'zh' : 'en'))
+let savedLang = null
+try { savedLang = localStorage.getItem('lang') } catch {}
+setLanguage(new URLSearchParams(location.search).get('lang') || savedLang || 'en')
