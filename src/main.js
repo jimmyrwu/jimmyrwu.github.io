@@ -91,7 +91,7 @@ document.querySelector('#app').innerHTML = `
 
   <section id="contact" class="page">
     <h2 data-t="contact-title">contact</h2>
-    <p data-t="contact-text">I'm always happy to talk about AI governance, teaching, or cows.</p>
+    <p data-t="contact-text">talk to me</p>
     <p><a href="mailto:jamewu@ethz.ch">jamewu@ethz.ch</a></p>
     <p><a class="icon-link" href="https://www.linkedin.com/in/jimmy-wu-41965812a/" target="_blank" rel="noopener" aria-label="LinkedIn">${linkedinIcon}</a></p>
   </section>
