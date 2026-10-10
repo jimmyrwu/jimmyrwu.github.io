@@ -213,32 +213,55 @@ code {
   --text-h: #fff;
   --code-bg: rgba(0, 0, 0, 0.35);
 
+  /* The video holds the footage (top half) stacked on its cow/hill matte (bottom half).
+     At 200% height with object-fit: cover, only the footage half is in view. */
   .bg-video {
     position: absolute;
-    inset: 0;
+    top: 0;
+    left: 0;
     z-index: -2;
     width: 100%;
-    height: 100%;
+    height: 200%;
     object-fit: cover;
   }
 
-  .name {
+  /* WebGL composite from layeredHero.js: background, then the name, then the cows */
+  .hero-canvas {
     position: absolute;
-    top: 24px;
-    left: 32px;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Your name over the video. The canvas in layeredHero.js reads these values,
+     so edit them here; the page redraws when you save. */
+  .name {
+    --name-height: 0.54;  /* baseline position in the video: 0 = top, 1 = bottom (hill ridge is ~0.7) */
+    --name-width: 0.8;    /* name width as a fraction of the screen */
+    --name-shadow: 0.25;  /* shadow strength, 0 = none */
+    font-weight: 600;     /* 400 = regular, 600 = semibold */
+    color: #fff;
+
     margin: 0;
-    font-size: 20px;
-    letter-spacing: -0.01em;
-    text-align: left;
-    @media (max-width: 1024px) {
-      top: 16px;
-      left: 20px;
-      font-size: 18px;
-    }
-    /* No tint over the video, so a soft shadow keeps the name readable on the bright sky */
-    text-shadow:
-      0 2px 12px rgba(0, 0, 0, 0.45),
-      0 1px 3px rgba(0, 0, 0, 0.35);
+    font-size: clamp(56px, 16vw, 240px);
+    letter-spacing: -0.02em;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  /* With the canvas drawing the name, keep the heading for screen readers and search only */
+  &.layered .name {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* Keep the video decoding for the canvas, but don't show it */
+  &.layered .bg-video {
+    opacity: 0;
   }
 
   @media (max-width: 1024px) {

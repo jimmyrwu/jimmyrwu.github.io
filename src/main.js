@@ -2,9 +2,10 @@ import 'lenis/dist/lenis.css'
 import './style.css'
 import Lenis from 'lenis'
 import headshotImg from './assets/headshot.jpg'
-import cowVideo from './assets/cowbackground_recoloured.mp4'
+import cowVideo from './assets/cowbackground_layered.mp4'
 import javascriptLogo from './assets/javascript.svg'
 import viteLogo from './assets/vite.svg'
+import { initLayeredHero } from './layeredHero.js'
 
 document.querySelector('#app').innerHTML = `
 <section id="center">
@@ -15,7 +16,7 @@ document.querySelector('#app').innerHTML = `
 <div class="ticks"></div>
 
 <section id="headshot">
-  <img src="${headshotImg}" alt="Headshot of Jimmy Wu" width="240" height="240">
+  <img src="${headshotImg}" alt="Headshot of Jimmy Wu" width="240" height="500">
 </section>
 
 <div class="ticks"></div>
@@ -56,6 +57,13 @@ document.querySelector('#app').innerHTML = `
 <div class="ticks"></div>
 <section id="spacer"></section>
 `
+
+// Name in the middle of the video, tucked behind the cows
+initLayeredHero(
+  document.querySelector('#center'),
+  document.querySelector('.bg-video'),
+  document.querySelector('.name'), // size, position and colour: see .name in style.css
+)
 
 // Smooth scrolling; anchors: true also smooth-scrolls in-page links like href="#headshot"
 const lenis = new Lenis({ autoRaf: true, anchors: true })
