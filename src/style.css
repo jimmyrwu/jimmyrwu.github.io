@@ -28,6 +28,10 @@
   --page-top: max(20svh, 96px);       /* how far down each page's content starts (cows start ~55%) */
   --page-top-small: max(16svh, 80px); /* same, on screens narrower than 1024px */
   --page-text-width: 680px;           /* longest line length, for comfortable reading */
+  /* How long each page holds still before the next one comes. Set to match the pause after
+     your name rises (the part of --rise-distance not spent rising), so they always feel the same.
+     To set your own, replace it with e.g. 60svh. */
+  --page-pause: calc(var(--rise-distance) * (1 - var(--name-rise-portion)));
 
   /* ---- Your name on the video (read by layeredHero.js) ---- */
   --rise-distance: 240svh;      /* scroll length of the name's rise + pause: more = slower */
@@ -35,7 +39,7 @@
   --name-start-height: 1.15;    /* where it starts, hidden behind the hill */
   --name-height: 0.46;          /* where it settles: 0 = top of the video, 1 = bottom (hill ridge ~0.7) */
   --name-width: 0.8;            /* width as a fraction of the screen (this sets its size) */
-  --name-shadow: 0.25;          /* shadow strength, 0 = none */
+  --name-shadow: 0.375;          /* shadow strength, 0 = none */
   --zh-size: 0.3;               /* Chinese name size, as a fraction of the name's size */
   --zh-gap: 0.3;                /* space between the name and the Chinese name: bigger = lower */
 
@@ -136,6 +140,12 @@
   }
 }
 
+html {
+  /* No "rubber-band" bounce past the top or bottom of the page, which would reveal the
+     plain background behind the video on phones */
+  overscroll-behavior-y: none;
+}
+
 body {
   margin: 0;
   /* 100vw includes the scrollbar, so clip the full-bleed video's overflow */
@@ -168,7 +178,7 @@ body {
     color: var(--text-color);
     font-weight: 600;
     text-decoration: none;
-    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
     opacity: 0.85;
     transition: opacity 0.2s;
 
@@ -211,7 +221,7 @@ body {
     left: 0;
     z-index: 2;
     width: 100vw;
-    height: 100svh;
+    height: 100lvh; /* largest screen height (see #center) */
     pointer-events: none;
   }
 }
@@ -224,7 +234,9 @@ body {
   display: flex;
   place-content: center;
   place-items: center;
-  height: 100svh;
+  /* 100lvh = the screen height with the phone's address bar hidden (the largest it gets),
+     so the video always covers the whole screen, even while that bar slides in and out */
+  height: 100lvh;
   width: 100vw;
   margin-inline: calc(50% - 50vw); /* break out of the #app column to the screen edges */
   overflow: hidden;
@@ -258,7 +270,7 @@ body {
     margin: 0;
     font-size: clamp(56px, 16vw, 240px);
     letter-spacing: -0.02em;
-    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
   }
 
   /* Your Chinese name, under "wu" and lined up with its right edge (--zh-… settings in section 1) */
@@ -289,10 +301,18 @@ body {
 /* =====================================================================================
    6. PAGES: about me, writing, media
    Each .page is one full screen, transparent so the cows stay visible behind it.
+   It's taller than the screen by --page-pause: while you scroll through that extra length,
+   its content (.page-inner, added automatically by main.js) holds still, then moves on.
    ===================================================================================== */
 .page {
   position: relative;
-  min-height: 100svh;
+  height: calc(100svh + var(--page-pause));
+}
+
+.page-inner {
+  position: sticky;
+  top: 0;
+  height: 100svh;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;      /* stack the contents top to bottom */
@@ -305,7 +325,7 @@ body {
   /* White text over the sky: semibold, with the same soft shadow as your name */
   font-weight: var(--page-weight);
   color: var(--page-text-color);
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
 
   h2 {
     margin: 0 0 8px;
@@ -316,6 +336,65 @@ body {
   p {
     margin: 0;
     max-width: var(--page-text-width);
+  }
+
+  /* CV highlights: years on the left, role on the right. Slightly smaller text so the
+     whole list fits on one screen above the hill. */
+  .cv-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-width: var(--page-text-width);
+    display: grid;
+    gap: 6px;
+    text-align: left;
+    font-size: 0.85em;
+
+    li {
+      display: grid;
+      grid-template-columns: 5.5em 1fr;
+      gap: 16px;
+    }
+
+    .when {
+      opacity: 0.8;
+      font-variant-numeric: tabular-nums; /* digits all the same width, so years line up */
+    }
+
+    .what {
+      font-weight: 400;  /* role in regular, place name (<b>) in semibold */
+    }
+
+    b {
+      font-weight: 600;
+    }
+  }
+
+  /* Icons (LinkedIn, PDF). Size them with font-size or the width/height here */
+  .icon {
+    width: 1.4em;
+    height: 1.4em;
+    vertical-align: middle;
+  }
+
+  .icon-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45)); /* matches the text shadow */
+  }
+
+  /* Links on the pages: same colour as the text, underlined so they're recognisable */
+  a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 0.75;
+    }
   }
 
   img {
@@ -335,6 +414,12 @@ body {
       height: 180px;
     }
   }
+}
+
+
+/* The CV page has the most content, so it starts a little higher than the others */
+#cv .page-inner {
+  padding-top: max(12svh, 80px);
 }
 
 

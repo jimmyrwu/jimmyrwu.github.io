@@ -20,6 +20,10 @@ import headshotImg from './assets/headshot.jpg'
 import cowVideo from './assets/cowbackground_layered.mp4'
 import { initLayeredHero } from './layeredHero.js'
 
+// Icons from Bootstrap Icons (https://icons.getbootstrap.com, MIT licence), drawn in the text colour
+const linkedinIcon = `<svg class="icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854zm4.943 12.248V6.169H2.542v7.225zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248S2.4 3.226 2.4 3.934c0 .694.521 1.248 1.327 1.248zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016l.016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225z"/></svg>`
+const fileIcon = `<svg class="icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5"/><path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z"/></svg>`
+
 
 // ---- 2. PAGE CONTENT ----
 // Plain HTML inside the backticks. Comments here are <!-- … -->, not //.
@@ -30,6 +34,8 @@ document.querySelector('#app').innerHTML = `
   <a href="#about">about me</a>
   <a href="#writing">writing</a>
   <a href="#media">media</a>
+  <a href="#cv">cv</a>
+  <a href="#contact">contact</a>
 </nav>
 
 <div id="hero-track">
@@ -45,11 +51,19 @@ document.querySelector('#app').innerHTML = `
 
   <!-- Pages: each one full screen, scrolling up from behind the cows -->
 
+  <!-- About me, one line at a time: each <section class="page"> is one step that rises,
+       pauses, and scrolls away before the next. The menu's "about me" goes to the first. -->
   <section id="about" class="page">
     <!-- <img src="${headshotImg}" alt="Headshot of Jimmy Wu" width="240" height="500"> -->
     <p>A physicist by training, I'm currently studying Policy and Computer Science at ETH Zürich, with a focus on comparative AI governance.</p>
+  </section>
+
+  <section class="page">
     <p>Prior, I held roles in teaching, technology policy, and management consulting.</p>
-    <p>My mission remained unchanged: <span class="extraBold">connecting people with each other, and with nature, through science.</span></p>
+  </section>
+
+  <section class="page">
+    <p>My goal remains unchanged: <span class="extraBold">connecting people with each other, and with nature, through science.</span></p>
   </section>
 
   <section id="writing" class="page">
@@ -62,11 +76,45 @@ document.querySelector('#app').innerHTML = `
     <p>Talks, interviews and press will go here.</p>
   </section>
 
+  <!-- CV highlights, newest first. Each line: <span class="when">years</span> <span class="what">…</span> -->
+  <section id="cv" class="page">
+    <h2>cv</h2>
+    <ul class="cv-list">
+      <li><span class="when">2025 –</span><span class="what"><b>ETH Zürich</b>, M.S. Science, Technology and Policy</span></li>
+      <li><span class="when">2025 –</span><span class="what"><b>ETH NADEL</b>, Research Assistant and Communications Lead</span></li>
+      <li><span class="when">2024–25</span><span class="what"><b>Wilson Center</b>, Research Assistant and Project Coordinator</span></li>
+      <li><span class="when">2023–24</span><span class="what"><b>National Taiwan University</b>, Huayu Enrichment Scholar</span></li>
+      <li><span class="when">2023</span><span class="what"><b>U.S. Department of State</b>, Graduate Intern, Office of the S&amp;T Adviser</span></li>
+      <li><span class="when">2019–21</span><span class="what"><b>Deerfield Academy</b>, Teaching Fellow in Mathematics</span></li>
+      <li><span class="when">2018</span><span class="what"><b>Archetype Growth</b>, Summer Analyst</span></li>
+      <li><span class="when">2015–19</span><span class="what"><b>Haverford College</b>, B.S. Physics, magna cum laude</span></li>
+    </ul>
+    <p><a class="icon-link" href="/jimmy-wu-cv.pdf" target="_blank" rel="noopener">${fileIcon}<span>full CV (PDF)</span></a></p>
+  </section>
+
+  <!-- Replace the placeholders: your email (in both places on the first line) and your LinkedIn URL -->
+  <section id="contact" class="page">
+    <h2>contact</h2>
+    <p>I'm always happy to talk about AI governance, teaching, or cows.</p>
+    <p><a href="mailto:your.email@example.com">your.email@example.com</a></p>
+    <p><a class="icon-link" href="https://www.linkedin.com/in/your-profile" target="_blank" rel="noopener" aria-label="LinkedIn">${linkedinIcon}</a></p>
+  </section>
+
 </div>
 `
 
 
 // ---- 3. START-UP ----
+
+// Wrap each page's content in a .page-inner, which holds still for a moment (--page-pause)
+// before the next page comes, like the pause after your name rises. Done here so the
+// page HTML above stays simple.
+for (const page of document.querySelectorAll('.page')) {
+  const inner = document.createElement('div')
+  inner.className = 'page-inner'
+  inner.append(...page.childNodes)
+  page.append(inner)
+}
 
 // The cow video in layers, with your name tucked behind the cows (see layeredHero.js)
 const hero = initLayeredHero(
@@ -94,7 +142,7 @@ snap.addElements(document.querySelectorAll('.page'), { align: 'start' }) // each
 // Each page's content fades and slides up as the page scrolls into view, following your scroll
 if (!reduceMotion) {
   for (const page of document.querySelectorAll('.page')) {
-    gsap.from(page.children, {
+    gsap.from(page.querySelector('.page-inner').children, {
       opacity: 0,
       y: 40,          // starts 40px lower
       stagger: 0.1,   // each paragraph slightly after the one before
