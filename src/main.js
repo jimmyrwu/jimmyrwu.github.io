@@ -85,11 +85,10 @@ document.querySelector('#app').innerHTML = `
     <p><a class="icon-link" href="/jimmy-wu-cv.pdf" target="_blank" rel="noopener">${fileIcon}<span data-t="cv-pdf">full CV (PDF)</span></a></p>
   </section>
 
-  <!-- Replace the email placeholder (in both places on its line) -->
   <section id="contact" class="page">
     <h2 data-t="contact-title">contact</h2>
     <p data-t="contact-text">I'm always happy to talk about AI governance, teaching, or cows.</p>
-    <p><a href="mailto:your.email@example.com">your.email@example.com</a></p>
+    <p><a href="mailto:jamewu@ethz.ch">jamewu@ethz.ch</a></p>
     <p><a class="icon-link" href="https://www.linkedin.com/in/jimmy-wu-41965812a/" target="_blank" rel="noopener" aria-label="LinkedIn">${linkedinIcon}</a></p>
   </section>
 
