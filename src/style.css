@@ -317,6 +317,11 @@ body {
   top: 0;
   left: 0;
   isolation: isolate;
+  /* Let touches and clicks pass through to the scrolling page underneath. Without this, a
+     swipe on the video lands on this fixed layer, which belongs to the (non-scrolling)
+     window rather than #scroller, so nothing would scroll on phones. Nothing in here is
+     clickable anyway: it's just the video and the canvas-drawn name. */
+  pointer-events: none;
   display: flex;
   place-content: center;
   place-items: center;
