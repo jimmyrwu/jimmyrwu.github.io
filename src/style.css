@@ -25,8 +25,14 @@
   --page-text-color: #fff;      /* text on the pages (about, writing, media) */
 
   /* ---- Pages ---- */
-  --page-top: max(20svh, 96px);       /* how far down each page's content starts (cows start ~55%) */
-  --page-top-small: max(16svh, 80px); /* same, on screens narrower than 1024px */
+  /* Page text is centred vertically between the menu and the top of the cows, and never
+     goes below the cows' top edge:
+     --page-clear-top  room kept free at the top, for the menu
+     --text-limit      the cows' top edge, as a height in the video (0 = top, 1 = bottom).
+                       layeredHero.js turns it into a position on your screen (--cows-top).
+                       Smaller = text kept higher. */
+  --page-clear-top: 80px;
+  --text-limit: 0.53;
   --page-text-width: 680px;           /* longest line length, for comfortable reading */
   /* How long each page holds still before the next one comes. Set to match the pause after
      your name rises (the part of --rise-distance not spent rising), so they always feel the same.
@@ -316,11 +322,13 @@ body {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;      /* stack the contents top to bottom */
-  justify-content: flex-start; /* start near the top of the page (see --page-top) */
+  justify-content: center;     /* centred vertically, between the menu and the top of the cows */
   align-items: center;
   gap: 12px;
   padding: 48px 32px;
-  padding-top: var(--page-top);
+  padding-top: var(--page-clear-top);
+  /* everything below the cows' top edge is kept free (55svh is the fallback if it can't be measured) */
+  padding-bottom: calc(100svh - var(--cows-top, 55svh));
 
   /* White text over the sky: semibold, with the same soft shadow as your name */
   font-weight: var(--page-weight);
@@ -406,20 +414,13 @@ body {
   }
 
   @media (max-width: 1024px) {
-    padding: 32px 20px;
-    padding-top: var(--page-top-small);
+    padding-inline: 20px;
 
     img {
       width: 180px;
       height: 180px;
     }
   }
-}
-
-
-/* The CV page has the most content, so it starts a little higher than the others */
-#cv .page-inner {
-  padding-top: max(12svh, 80px);
 }
 
 

@@ -79,16 +79,7 @@ document.querySelector('#app').innerHTML = `
   <!-- CV highlights, newest first. Each line: <span class="when">years</span> <span class="what">…</span> -->
   <section id="cv" class="page">
     <h2>cv</h2>
-    <ul class="cv-list">
-      <li><span class="when">2025 –</span><span class="what"><b>ETH Zürich</b>, M.S. Science, Technology and Policy</span></li>
-      <li><span class="when">2025 –</span><span class="what"><b>ETH NADEL</b>, Research Assistant and Communications Lead</span></li>
-      <li><span class="when">2024–25</span><span class="what"><b>Wilson Center</b>, Research Assistant and Project Coordinator</span></li>
-      <li><span class="when">2023–24</span><span class="what"><b>National Taiwan University</b>, Huayu Enrichment Scholar</span></li>
-      <li><span class="when">2023</span><span class="what"><b>U.S. Department of State</b>, Graduate Intern, Office of the S&amp;T Adviser</span></li>
-      <li><span class="when">2019–21</span><span class="what"><b>Deerfield Academy</b>, Teaching Fellow in Mathematics</span></li>
-      <li><span class="when">2018</span><span class="what"><b>Archetype Growth</b>, Summer Analyst</span></li>
-      <li><span class="when">2015–19</span><span class="what"><b>Haverford College</b>, B.S. Physics, magna cum laude</span></li>
-    </ul>
+    
     <p><a class="icon-link" href="/jimmy-wu-cv.pdf" target="_blank" rel="noopener">${fileIcon}<span>full CV (PDF)</span></a></p>
   </section>
 

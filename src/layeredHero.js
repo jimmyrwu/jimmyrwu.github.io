@@ -161,6 +161,7 @@ export function initLayeredHero(section, video, title) {
       startHeight: num('--name-start-height', 1.15),
       risePortion: num('--name-rise-portion', 0.6),
       width: num('--name-width', 0.8),
+      textLimit: num('--text-limit', 0.53),
       shadow: num('--name-shadow', 0.25),
       weight: css.fontWeight,
       color: css.color,
@@ -230,6 +231,10 @@ export function initLayeredHero(section, video, title) {
     // so the name always lines up with the same spot on the hill, whatever the screen shape
     const toScreenY = (videoY) => (videoY - (1 - scale[1]) / 2) / scale[1] * h
     nctx.fillText(nameText, w / 2, toScreenY(height))
+
+    // Tell style.css where the top of the cows is on this screen (in CSS pixels), so page text
+    // can stay above it: --cows-top, used by .page-inner. Changes with the screen's shape.
+    document.documentElement.style.setProperty('--cows-top', `${toScreenY(readStyle().textLimit) / dpr}px`)
 
     // Chinese name: a smaller line under the name, lined up with the right edge of the name.
     // Settings on .name-zh in style.css: --zh-size (× the name's size), --zh-gap, font-weight.
