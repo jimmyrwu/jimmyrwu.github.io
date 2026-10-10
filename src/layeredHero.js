@@ -20,15 +20,18 @@ uniform sampler2D uText;
 uniform sampler2D uOverlay;
 uniform vec2 uScale;
 uniform vec2 uOffset;
+uniform float uNameShift;                          // how far below its final spot the name is drawn
+uniform float uOverlayShift;                       // same for the tagline
+uniform float uOverlayAlpha;                       // tagline fade-in
 varying vec2 vUv;
 void main() {
   vec2 v = vUv * uScale + uOffset;                 // "object-fit: cover" into the colour frame
   vec3 colour = texture2D(uVideo, vec2(v.x, v.y * 0.5)).rgb;
   float fg = smoothstep(0.15, 0.85, texture2D(uVideo, vec2(v.x, 0.5 + v.y * 0.5)).r);
-  vec4 text = texture2D(uText, vUv);               // premultiplied alpha
+  vec4 text = texture2D(uText, vUv - vec2(0.0, uNameShift)); // premultiplied alpha
   float show = text.a * (1.0 - fg);                // the name is hidden wherever the foreground is
   vec3 behind = colour * (1.0 - show) + text.rgb * (1.0 - fg);
-  vec4 overlay = texture2D(uOverlay, vUv);         // tagline, always on top
+  vec4 overlay = texture2D(uOverlay, vUv - vec2(0.0, uOverlayShift)) * uOverlayAlpha; // tagline, on top
   gl_FragColor = vec4(behind * (1.0 - overlay.a) + overlay.rgb, 1.0);
 }`
 
@@ -38,10 +41,12 @@ const VIDEO_ASPECT = 16 / 9
 //   --name-height  where the baseline sits in the video, 0 = top, 1 = bottom
 //   --name-width   how wide the name is, as a fraction of the screen
 //   --name-shadow  soft shadow strength, 0 = none
+//   --name-start-height  where the name starts (hidden behind the hill) before it rises on scroll
 //   font-weight, color, font-family
 // The tagline (see .tagline) is drawn in front of everything, on the grass:
 //   --tagline-size    font size as a fraction of the name's
 //   --tagline-height  where its baseline sits in the video, 0 = top, 1 = bottom
+//   --tagline-starts-at  how far through the scroll (0..1) the tagline starts coming in
 export function initLayeredHero(section, video, title, tagline) {
   const canvas = document.createElement('canvas')
   canvas.className = 'hero-canvas'
@@ -52,7 +57,7 @@ export function initLayeredHero(section, video, title, tagline) {
   if (!gl) {
     canvas.remove()
     section.classList.add('no-webgl')
-    return
+    return { setProgress() {} }
   }
   section.classList.add('layered')
 
@@ -90,6 +95,9 @@ export function initLayeredHero(section, video, title, tagline) {
   gl.uniform1i(gl.getUniformLocation(program, 'uOverlay'), 2)
   const uScale = gl.getUniformLocation(program, 'uScale')
   const uOffset = gl.getUniformLocation(program, 'uOffset')
+  const uNameShift = gl.getUniformLocation(program, 'uNameShift')
+  const uOverlayShift = gl.getUniformLocation(program, 'uOverlayShift')
+  const uOverlayAlpha = gl.getUniformLocation(program, 'uOverlayAlpha')
   gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true)
 
   const textCanvas = document.createElement('canvas')
@@ -101,18 +109,35 @@ export function initLayeredHero(section, video, title, tagline) {
     const num = (name, fallback) => parseFloat(css.getPropertyValue(name)) || fallback
     return {
       height: num('--name-height', 0.55),
+      startHeight: num('--name-start-height', 1.15),
       width: num('--name-width', 0.8),
       shadow: num('--name-shadow', 0.25),
       taglineSize: num('--tagline-size', 0.16),
       taglineHeight: num('--tagline-height', 0.82),
+      taglineStartsAt: num('--tagline-starts-at', 0.6),
       weight: css.fontWeight,
       color: css.color,
       fontFamily: css.fontFamily,
     }
   }
 
+  // Scroll animation, progress 0..1:
+  //   0 .. taglineStartsAt   the name rises from --name-start-height to --name-height
+  //   taglineStartsAt .. 1   then the tagline fades in, sliding up into place
+  let progress = 1
+  let rise = 0 // distance between the name's start and final position, in screen fractions
+  let taglineStartsAt = 0.6
+  const easeOut = (t) => 1 - (1 - Math.min(Math.max(t, 0), 1)) ** 3 // fast at first, gently settling
+  function applyProgress() {
+    const name = easeOut(progress / taglineStartsAt)
+    const tag = easeOut((progress - taglineStartsAt) / (1 - taglineStartsAt))
+    gl.uniform1f(uNameShift, rise * (1 - name))
+    gl.uniform1f(uOverlayAlpha, tag)
+    gl.uniform1f(uOverlayShift, 0.04 * (1 - tag))
+  }
+
   function layout() {
-    const { height, width, shadow, weight, color, fontFamily } = readStyle()
+    const { height, startHeight, width, shadow, weight, color, fontFamily } = readStyle()
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
     const w = Math.round(section.clientWidth * dpr)
     const h = Math.round(section.clientHeight * dpr)
@@ -125,6 +150,9 @@ export function initLayeredHero(section, video, title, tagline) {
     const scale = aspect > VIDEO_ASPECT ? [1, VIDEO_ASPECT / aspect] : [aspect / VIDEO_ASPECT, 1]
     gl.uniform2f(uScale, scale[0], scale[1])
     gl.uniform2f(uOffset, (1 - scale[0]) / 2, (1 - scale[1]) / 2)
+    rise = (startHeight - height) / scale[1]
+    if (tagline) taglineStartsAt = readStyle(tagline).taglineStartsAt
+    applyProgress()
 
     // Name: `width` of the screen (but never taller than 30% of the video), baseline at `height`
     const videoHeightOnScreen = h / scale[1]
@@ -160,6 +188,7 @@ export function initLayeredHero(section, video, title, tagline) {
     }
   }
 
+  // Every display frame, so the rising name moves smoothly even between video frames
   function draw() {
     if (video.readyState >= 2) {
       gl.activeTexture(gl.TEXTURE0)
@@ -167,11 +196,8 @@ export function initLayeredHero(section, video, title, tagline) {
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, video)
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
     }
-    schedule()
+    requestAnimationFrame(draw)
   }
-  const schedule = video.requestVideoFrameCallback
-    ? () => video.requestVideoFrameCallback(draw)
-    : () => requestAnimationFrame(draw)
 
   layout()
   new ResizeObserver(layout).observe(section)
@@ -181,5 +207,12 @@ export function initLayeredHero(section, video, title, tagline) {
     // Saving style.css swaps the stylesheet without reloading; redraw the name to match
     new MutationObserver(layout).observe(document.head, { childList: true, subtree: true, characterData: true })
   }
-  schedule()
+  requestAnimationFrame(draw)
+
+  return {
+    setProgress(p) {
+      progress = Math.min(Math.max(p, 0), 1)
+      applyProgress()
+    },
+  }
 }

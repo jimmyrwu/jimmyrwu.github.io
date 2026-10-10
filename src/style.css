@@ -99,16 +99,27 @@ p {
   box-sizing: border-box;
 }
 
-/* Full-screen, edge-to-edge first page with the cow video behind it */
+/* Extra scroll length while the hero stays pinned and the name rises */
+#hero-track {
+  --rise-distance: 240svh;  /* how much scrolling the whole animation takes: more = slower */
+  height: calc(100svh + var(--rise-distance));
+
+  @media (prefers-reduced-motion: reduce) {
+    --rise-distance: 0px;
+  }
+}
+
+/* Full-screen, edge-to-edge first page with the cow video behind it; pinned while #hero-track scrolls */
 #center {
-  position: relative;
+  position: sticky;
+  top: 0;
   isolation: isolate;
   display: flex;
   flex-direction: column;
   place-content: center;
   place-items: center;
   gap: 25px;
-  min-height: 100svh;
+  height: 100svh;
   width: 100vw;
   margin-inline: calc(50% - 50vw);
   box-sizing: border-box;
@@ -151,7 +162,8 @@ p {
   }
 
   .name {
-    --name-height: 0.54;  /* baseline position in the video: 0 = top, 1 = bottom (hill ridge is ~0.7) */
+    --name-start-height: 1.15; /* where it starts, hidden behind the hill, before rising on scroll */
+    --name-height: 0.46;  /* baseline position in the video: 0 = top, 1 = bottom (hill ridge is ~0.7) */
     --name-width: 0.8;    /* name width as a fraction of the screen */
     font-weight: 600;     /* 400 = regular, 600 = semibold */
     font-size: clamp(56px, 16vw, 240px);
@@ -161,6 +173,7 @@ p {
   .tagline {
     --tagline-size: 0.16; /* font size as a fraction of the name's */
     --tagline-height: 0.82; /* baseline position in the video, on the grass below the cows */
+    --tagline-starts-at: 0.6; /* comes in once the name has risen: 0.6 = 60% through the scroll */
     font-weight: 400;
     font-size: clamp(16px, 2.5vw, 32px);
   }
