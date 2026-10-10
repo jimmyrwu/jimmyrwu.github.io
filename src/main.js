@@ -31,6 +31,9 @@ const fileIcon = `<svg class="icon" viewBox="0 0 16 16" fill="currentColor" aria
 document.querySelector('#app').innerHTML = `
 <!-- Menu at the top of the screen; each link glides to the section with that id -->
 <nav class="top-nav" aria-label="Main">
+  <!-- Phones only: opens and closes the list of links below -->
+  <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="nav-links">menu</button>
+  <div class="nav-links" id="nav-links">
   <a href="#about" data-t="nav-about">about me</a>
   <a href="#writing" data-t="nav-writing">writing</a>
   <a href="#media" data-t="nav-media">media</a>
@@ -38,6 +41,7 @@ document.querySelector('#app').innerHTML = `
   <a href="#contact" data-t="nav-contact">contact</a>
   <!-- Language switch: shows the language you can switch TO -->
   <button class="lang-toggle" type="button">中文</button>
+  </div>
 </nav>
 
 <div id="hero-track">
@@ -143,8 +147,13 @@ const hero = initLayeredHero(
 
 // Smooth scrolling; anchors: true also glides to menu links like href="#about".
 // GSAP's clock drives Lenis, so smooth scrolling and the GSAP animations below stay in step.
+// The page scrolls inside #scroller (see index.html), so Lenis and GSAP are pointed at it.
 gsap.registerPlugin(ScrollTrigger)
+const scroller = document.querySelector('#scroller')
+ScrollTrigger.defaults({ scroller })
 const lenis = new Lenis({
+  wrapper: scroller,
+  content: document.querySelector('#app'),
   anchors: true,
   wheelMultiplier: 0.5, // scroll speed for mouse wheel / trackpad: 1 = normal, 0.5 = half speed
   touchMultiplier: 0.5, // same for touch screens (applies where Lenis handles touch)
@@ -180,17 +189,28 @@ if (!reduceMotion) {
 }
 
 // The name's scroll animation: rises and pauses while scrolling through .rise-space,
-// then scrolls away with the page. Lenis smooths by moving the real page, so following
-// window.scrollY follows the smoothed scroll.
+// then scrolls away with the page. Lenis smooths by moving the real scroll position, so
+// following scroller.scrollTop follows the smoothed scroll.
 const riseSpace = document.querySelector('.rise-space')
 function updateRise() {
   const distance = riseSpace.offsetHeight
-  hero.setProgress(distance > 0 ? window.scrollY / distance : 1)
-  hero.setScrollAway(window.scrollY - distance)
+  hero.setProgress(distance > 0 ? scroller.scrollTop / distance : 1)
+  hero.setScrollAway(scroller.scrollTop - distance)
 }
-window.addEventListener('scroll', updateRise, { passive: true })
+scroller.addEventListener('scroll', updateRise, { passive: true })
 window.addEventListener('resize', updateRise)
 updateRise()
+
+// Phone menu: the "menu" button opens and closes the links; picking a link closes it again
+const nav = document.querySelector('.top-nav')
+const menuButton = document.querySelector('.menu-toggle')
+function setMenuOpen(open) {
+  nav.classList.toggle('open', open)
+  menuButton.setAttribute('aria-expanded', String(open))
+  menuButton.textContent = open ? 'close' : 'menu'
+}
+menuButton.addEventListener('click', () => setMenuOpen(!nav.classList.contains('open')))
+for (const link of nav.querySelectorAll('.nav-links a')) link.addEventListener('click', () => setMenuOpen(false))
 
 // Language toggle (EN / 中文). The choice is remembered, and ?lang=zh in the address opens the
 // Chinese version directly, so you can send people a link to it.

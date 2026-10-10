@@ -148,10 +148,22 @@
   }
 }
 
-html {
-  /* No "rubber-band" bounce past the top or bottom of the page, which would reveal the
-     plain background behind the video on phones */
-  overscroll-behavior-y: none;
+/* The browser window itself never scrolls; the page scrolls inside #scroller instead.
+   Phones only hide their address bar when the window scrolls, so this keeps it in place
+   (and the screen height never changes under the video). */
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+#scroller {
+  position: fixed;
+  inset: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: none; /* no "rubber-band" bounce revealing the background */
 }
 
 body {
@@ -179,13 +191,19 @@ body {
   top: 24px;
   right: 32px;
   z-index: 3;
-  display: flex;
-  gap: 28px;
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
 
   a,
-  .lang-toggle {
+  .lang-toggle,
+  .menu-toggle {
     color: var(--text-color);
     font-weight: 600;
+    white-space: nowrap; /* keep "about me" on one line */
     text-decoration: none;
     text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
     opacity: 0.85;
@@ -199,25 +217,62 @@ body {
     }
   }
 
-  /* The language switch looks like the other menu links, with a thin line to set it apart */
-  .lang-toggle {
+  /* Buttons styled like the links */
+  .lang-toggle,
+  .menu-toggle {
     font: inherit;
     font-weight: 600;
     background: none;
     border: 0;
-    border-left: 1px solid rgba(255, 255, 255, 0.5);
-    padding: 0 0 0 20px;
+    padding: 0;
     cursor: pointer;
   }
 
-  @media (max-width: 600px) {
+  /* The language switch has a thin line to set it apart from the page links */
+  .lang-toggle {
+    border-left: 1px solid rgba(255, 255, 255, 0.5);
+    padding-left: 20px;
+  }
+
+  /* The "menu" button only appears on phones */
+  .menu-toggle {
+    display: none;
+  }
+
+  /* Phones: just a "menu" button; tapping it drops down the links in a soft dark panel */
+  @media (max-width: 700px) {
     top: 16px;
     right: 20px;
-    gap: 18px;
     font-size: 22px;
+    text-align: right;
+
+    .menu-toggle {
+      display: inline-block;
+    }
+
+    .nav-links {
+      display: none;
+      position: absolute;
+      top: calc(100% + 12px);
+      right: -8px;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 14px;
+      padding: 16px 20px;
+      border-radius: 14px;
+      background: rgba(0, 0, 0, 0.35);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+    }
+
+    &.open .nav-links {
+      display: flex;
+    }
 
     .lang-toggle {
-      padding-left: 14px;
+      border-left: 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.5);
+      padding: 12px 0 0;
     }
   }
 }
@@ -233,6 +288,9 @@ body {
 
 /* Holds the pinned video plus everything that scrolls over it */
 #hero-track {
+  /* The first screen's worth of space (the video itself is fixed, so it takes up none) */
+  padding-top: 100lvh;
+
   /* The scroll space where the name rises and pauses (length: --rise-distance) */
   .rise-space {
     height: var(--rise-distance);
@@ -252,8 +310,12 @@ body {
 
 /* The first screen: full width and height, pinned in place for the whole page */
 #center {
-  position: sticky;
+  /* Fixed to the screen like the cow layer (.hero-foreground), so both move together. If one
+     were sticky and the other fixed, phone browsers can shift them apart while the address
+     bar slides in and out, briefly showing the grey page background. */
+  position: fixed;
   top: 0;
+  left: 0;
   isolation: isolate;
   display: flex;
   place-content: center;
@@ -262,7 +324,6 @@ body {
      so the video always covers the whole screen, even while that bar slides in and out */
   height: 100lvh;
   width: 100vw;
-  margin-inline: calc(50% - 50vw); /* break out of the #app column to the screen edges */
   overflow: hidden;
 
   /* The video file: footage (top half) stacked on its cow/hill matte (bottom half).
