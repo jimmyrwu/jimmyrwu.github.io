@@ -17,8 +17,8 @@
    ===================================================================================== */
 :root {
   /* ---- Text ---- */
-  --text-size: 18px;            /* normal text (pages, menu) */
-  --text-size-small: 20px;      /* normal text on screens narrower than 1024px */
+  --text-size: 22px;            /* normal text (pages, menu) */
+  --text-size-small: 22px;      /* normal text on screens narrower than 1024px */
   --heading-size: 32px;         /* page headings ("writing", "media") */
   --text-color: #fff;           /* all text, light and dark mode */
   --page-weight: 600;           /* text on the pages: 200 thin, 400 regular, 600 semibold */
