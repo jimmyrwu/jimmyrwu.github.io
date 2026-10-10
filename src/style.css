@@ -160,7 +160,10 @@ body {
 
 #scroller {
   position: fixed;
-  inset: 0;
+  /* 1px short of the bottom on purpose: Chrome treats a scrolling box that exactly fills the
+     screen as the page itself (and would hide its address bar again). The fixed video still
+     covers that last pixel, so it isn't visible. */
+  inset: 0 0 1px 0;
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: none; /* no "rubber-band" bounce revealing the background */
